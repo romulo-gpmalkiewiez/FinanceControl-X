@@ -42,6 +42,7 @@ namespace FinanceControlX
             this.buttonSalvar = new System.Windows.Forms.Button();
             this.buttonCancelar = new System.Windows.Forms.Button();
             this.textBoxValor = new System.Windows.Forms.TextBox();
+            this.btnExcluirCategoria = new System.Windows.Forms.LinkLabel();
             this.groupBoxTipo.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -168,11 +169,23 @@ namespace FinanceControlX
             this.textBoxValor.Size = new System.Drawing.Size(88, 20);
             this.textBoxValor.TabIndex = 2;
             // 
+            // btnExcluirCategoria
+            // 
+            this.btnExcluirCategoria.AutoSize = true;
+            this.btnExcluirCategoria.Location = new System.Drawing.Point(118, 188);
+            this.btnExcluirCategoria.Name = "btnExcluirCategoria";
+            this.btnExcluirCategoria.Size = new System.Drawing.Size(38, 13);
+            this.btnExcluirCategoria.TabIndex = 7;
+            this.btnExcluirCategoria.TabStop = true;
+            this.btnExcluirCategoria.Text = "Excluir";
+            this.btnExcluirCategoria.MouseClick += new System.Windows.Forms.MouseEventHandler(this.btnExcluirCategoria_MouseClick);
+            // 
             // FormDlgLancamento
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(415, 259);
+            this.Controls.Add(this.btnExcluirCategoria);
             this.Controls.Add(this.textBoxValor);
             this.Controls.Add(this.buttonCancelar);
             this.Controls.Add(this.buttonSalvar);
@@ -209,5 +222,6 @@ namespace FinanceControlX
         private System.Windows.Forms.Button buttonSalvar;
         private System.Windows.Forms.Button buttonCancelar;
         private System.Windows.Forms.TextBox textBoxValor;
+        private System.Windows.Forms.LinkLabel btnExcluirCategoria;
     }
 }

@@ -1,19 +1,14 @@
 ﻿using FinanceControlX.model;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace FinanceControlX
 {
     public partial class FormMain : Form
     {
-        private DataTable dt = new DataTable();
+        private DataTable dataTableLancamentos = new DataTable();
 
         public FormMain()
         {
@@ -23,9 +18,7 @@ namespace FinanceControlX
 
         private void Inicializar()
         {
-            dt = Lancamento.GetLancamentos();
-            dataGridViewLancamentos.DataSource = dt;
-
+            UpdateDataTableLancamentos();
             ConfigurarDataTableViewLancamentos();
         }
 
@@ -41,7 +34,7 @@ namespace FinanceControlX
             dataGridViewLancamentos.Columns["tipo"].Width = 110;
 
             dataGridViewLancamentos.Columns["nome_categoria"].HeaderText = "Categoria";
-            dataGridViewLancamentos.Columns["tipo"].Width = 130;
+            dataGridViewLancamentos.Columns["nome_categoria"].Width = 130;
 
             dataGridViewLancamentos.Columns["valor"].HeaderText = "Valor (R$)";
             dataGridViewLancamentos.Columns["valor"].Width = 150;
@@ -55,16 +48,49 @@ namespace FinanceControlX
             dataGridViewLancamentos.Columns["observacao"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void OpenLancamentoDlg(int lancamentoId)
         {
             this.Enabled = false;
-            FormDlgLancamento formDlgLancamento = new FormDlgLancamento(this);
+            FormDlgLancamento formDlgLancamento = new FormDlgLancamento(this, lancamentoId, this.UpdateDataTableLancamentos);
             formDlgLancamento.ShowDialog();
         }
 
-        private void label1_Click(object sender, EventArgs e)
+        private void btnAdicionar_Click(object sender, EventArgs e)
         {
+            OpenLancamentoDlg(0);
+        }
 
+        private void btnEditar_Click(object sender, EventArgs e)
+        {
+            OpenLancamentoDlg(GetSelectedLancamentoId());
+        }
+
+        private void btnExcluir_Click(object sender, EventArgs e)
+        {
+            int selectedLancamentoId = GetSelectedLancamentoId();
+
+            if (Lancamento.Delete(selectedLancamentoId))
+            {
+                UpdateDataTableLancamentos();
+                MessageBox.Show("Lançamento removido com sucesso!");
+            }
+        }
+
+        private int GetSelectedLancamentoId()
+        {
+            DataGridViewRow selectedRow = dataGridViewLancamentos.SelectedRows[0];
+            return (int)selectedRow.Cells["ID"].Value;
+        }
+
+        private void UpdateDataTableLancamentos()
+        {
+            dataTableLancamentos = Lancamento.GetDataTableLancamentos();
+            dataGridViewLancamentos.DataSource = dataTableLancamentos;
+        }
+
+        private void btnRefresh_Click(object sender, EventArgs e)
+        {
+            UpdateDataTableLancamentos();
         }
     }
 }

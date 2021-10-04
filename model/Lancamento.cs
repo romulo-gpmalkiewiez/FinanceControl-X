@@ -1,10 +1,6 @@
 ﻿using MySql.Data.MySqlClient;
 using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace FinanceControlX.model
@@ -17,8 +13,9 @@ namespace FinanceControlX.model
         public string Descricao { get; set; }
         public string Observacao { get; set; }
         public int? CategoriaId { get; set; }
+        public Categoria categoria { get; set; }
 
-        public static DataTable GetLancamentos()
+        public static DataTable GetDataTableLancamentos()
         {
             var dt = new DataTable();
 
@@ -35,7 +32,7 @@ namespace FinanceControlX.model
 
             try
             {
-                using (var cn= new MySqlConnection(Conn.connectionString))
+                using (var cn = new MySqlConnection(Conn.connectionString))
                 {
                     cn.Open();
                     using (var da = new MySqlDataAdapter(sql, cn))
@@ -44,53 +41,122 @@ namespace FinanceControlX.model
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(e.Message);
             }
 
             return dt;
         }
 
-        public static Lancamento Save(Lancamento lancamento)
+        public static Lancamento GetLancamentoById(int lancamentoId)
         {
-            return lancamento.Id == null ? Insert(lancamento) : Update(lancamento);
-        }
+            if (lancamentoId == 0)
+            {
+                return null;
+            }
 
-        private static Lancamento Update(Lancamento lancamento)
-        {
-            var updateSQL = "" +
-                $"UPDATE lancamento " +
-                $"SET " +
-                $"  tipo = {lancamento.Tipo}, " +
-                $"  valor = {lancamento.Valor} " +
-                $"  descricao = {lancamento.Descricao} " +
-                $"  observacao = {lancamento.Observacao} " +
-                $"  categoria_id = {lancamento.CategoriaId} " +
-                $"WHERE id = {lancamento.Id}";
+            Lancamento lancamento = null;
 
-            MessageBox.Show(updateSQL);
+            var sql = "" +
+                $"SELECT " +
+                $"  lancamento.id, " +
+                $"  lancamento.tipo, " +
+                $"  lancamento.valor, " +
+                $"  lancamento.descricao, " +
+                $"  lancamento.observacao, " +
+                $"  lancamento.categoria_id " +
+                $"FROM lancamento " +
+                $"WHERE lancamento.id = {lancamentoId}";
+
+            try
+            {
+                using (var cn = new MySqlConnection(Conn.connectionString))
+                {
+                    cn.Open();
+                    using (var cmd = new MySqlCommand(sql, cn))
+                    {
+                        using (var dr = cmd.ExecuteReader())
+                        {
+                            if (dr.HasRows)
+                            {
+                                if (dr.Read())
+                                {
+                                    lancamento = new Lancamento();
+                                    lancamento.Id = Convert.ToInt32(dr["id"]);
+                                    lancamento.Tipo = dr["tipo"].ToString();
+                                    lancamento.Descricao = dr["descricao"].ToString();
+                                    lancamento.Observacao = dr["observacao"].ToString();
+                                    lancamento.Valor = Convert.ToDecimal(dr["valor"]);
+                                    lancamento.CategoriaId = Convert.ToInt32(dr["categoria_id"]);
+
+                                    return lancamento;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erro ao carregar lançamento {lancamentoId}. {ex.Message}");
+            }
 
             return lancamento;
         }
 
-        private static Lancamento Insert(Lancamento lancamento)
+        public static Boolean Delete(int lancamentoId) {
+            var deleteSQL = $"DELETE FROM lancamento WHERE id = {lancamentoId}";
+
+            try
+            {
+                using (var cn = new MySqlConnection(Conn.connectionString))
+                {
+                    cn.Open();
+                    using (var cmd = new MySqlCommand(deleteSQL, cn))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message, deleteSQL);
+                return false;
+            }
+
+            return true;
+        }
+
+        public static void Save(Lancamento lancamento)
         {
             ValidaLancamento(lancamento);
 
-            var insertSQL = "" +
-                "INSERT INTO lancamento (tipo, valor, descricao, observacao, categoria_id " +
-                "VALUES (" +
-                $"  {lancamento.Tipo}, " +
-                $"  {lancamento.Valor}, " +
-                $"  {lancamento.Descricao}, " +
-                $"  {lancamento.Observacao}, " +
-                $"  {lancamento.CategoriaId}" +
-                ")";
+            var sql = lancamento.Id == null || lancamento.Id == 0
+                    ? "INSERT INTO lancamento (tipo, valor, descricao, observacao, categoria_id) VALUES (@tipo, @valor, @descricao, @observacao, @categoria_id)"
+                    : $"UPDATE lancamento SET tipo=@tipo, valor=@valor, descricao=@descricao, observacao=@observacao, categoria_id=@categoria_id WHERE id={lancamento.Id}";
 
-            MessageBox.Show(insertSQL);
+            try
+            {
+                using (var cn = new MySqlConnection(Conn.connectionString))
+                {
+                    cn.Open();
+                    using (var cmd = new MySqlCommand(sql, cn))
+                    {
+                        cmd.Parameters.AddWithValue("@tipo", lancamento.Tipo);
+                        cmd.Parameters.AddWithValue("@valor", lancamento.Valor);
+                        cmd.Parameters.AddWithValue("@descricao", lancamento.Descricao);
+                        cmd.Parameters.AddWithValue("@observacao", lancamento.Observacao);
+                        cmd.Parameters.AddWithValue("@categoria_id", lancamento.CategoriaId);
 
-            return lancamento;
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message);
+            }
         }
 
         private static void ValidaLancamento(Lancamento lancamento)
