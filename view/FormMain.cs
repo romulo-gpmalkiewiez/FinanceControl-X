@@ -67,8 +67,17 @@ namespace FinanceControlX
 
         private void btnExcluir_Click(object sender, EventArgs e)
         {
-            int selectedLancamentoId = GetSelectedLancamentoId();
+            if (MessageBox.Show(
+                "Deseja excluir o lançamento selecionado?",
+                "Atenção",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning
+            ) == DialogResult.No)
+            {
+                return;
+            }
 
+            int selectedLancamentoId = GetSelectedLancamentoId();
             if (Lancamento.Delete(selectedLancamentoId))
             {
                 UpdateDataTableLancamentos();

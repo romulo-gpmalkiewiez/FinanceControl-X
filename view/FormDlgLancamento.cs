@@ -75,8 +75,7 @@ namespace FinanceControlX
             {
                 ConvertScreenDataToLancamento();
 
-                // verificar categoria
-                Categoria.Save(_lancamento.categoria);
+                Categoria.Save(_lancamento.Categoria);
                 UpdateCategorias();
                 Lancamento.Save(_lancamento);
 
@@ -104,10 +103,10 @@ namespace FinanceControlX
             if (comboBoxCategoria.SelectedValue != null)
             {
                 _lancamento.CategoriaId = (int)comboBoxCategoria.SelectedValue;
-                _lancamento.categoria = comboBoxCategoria.SelectedItem as Categoria;
+                _lancamento.Categoria = comboBoxCategoria.SelectedItem as Categoria;
             } else
             {
-                _lancamento.categoria = new Categoria(comboBoxCategoria.Text);
+                _lancamento.Categoria = new Categoria(comboBoxCategoria.Text);
             }
         }
 
@@ -127,7 +126,11 @@ namespace FinanceControlX
             comboBoxCategoria.ValueMember = "Id";
             comboBoxCategoria.DisplayMember = "Nome";
 
-            if (_lancamento.CategoriaId != null)
+            if (_lancamento.Categoria?.Id != null)
+            {
+                comboBoxCategoria.SelectedItem = _categorias.Find(c => c.Id == _lancamento.Categoria.Id);
+            }
+            else if (_lancamento.CategoriaId != null)
             {
                 comboBoxCategoria.SelectedItem = _categorias.Find(c => c.Id == _lancamento.CategoriaId);
             }
@@ -142,6 +145,16 @@ namespace FinanceControlX
 
         private void btnExcluirCategoria_MouseClick(object sender, MouseEventArgs e)
         {
+            if (MessageBox.Show(
+                "Deseja excluir a categoria selecionada?",
+                "Atenção",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning
+            ) == DialogResult.No)
+            {
+                return;
+            }
+
             var categoriaId = (int)comboBoxCategoria.SelectedValue;
 
             if (Categoria.Delete(categoriaId))

@@ -13,7 +13,7 @@ namespace FinanceControlX.model
         public string Descricao { get; set; }
         public string Observacao { get; set; }
         public int? CategoriaId { get; set; }
-        public Categoria categoria { get; set; }
+        public Categoria Categoria { get; set; }
 
         public static DataTable GetDataTableLancamentos()
         {
@@ -128,7 +128,7 @@ namespace FinanceControlX.model
             return true;
         }
 
-        public static void Save(Lancamento lancamento)
+        public static Lancamento Save(Lancamento lancamento)
         {
             ValidaLancamento(lancamento);
 
@@ -147,15 +147,19 @@ namespace FinanceControlX.model
                         cmd.Parameters.AddWithValue("@valor", lancamento.Valor);
                         cmd.Parameters.AddWithValue("@descricao", lancamento.Descricao);
                         cmd.Parameters.AddWithValue("@observacao", lancamento.Observacao);
-                        cmd.Parameters.AddWithValue("@categoria_id", lancamento.CategoriaId);
+                        cmd.Parameters.AddWithValue("@categoria_id", lancamento.Categoria.Id);
 
                         cmd.ExecuteNonQuery();
+                        lancamento.Id = Convert.ToInt32(cmd.LastInsertedId);
+
+                        return lancamento;
                     }
                 }
             }
             catch (Exception e)
             {
                 MessageBox.Show(e.Message);
+                return null;
             }
         }
 
@@ -169,7 +173,7 @@ namespace FinanceControlX.model
             {
                 throw new ArgumentException("Você deve informar o valor.");
             }
-            if (lancamento.CategoriaId == null)
+            if (lancamento.Categoria == null || lancamento.Categoria.Id == null)
             {
                 throw new ArgumentException("Você deve informar a categoria.");
             }

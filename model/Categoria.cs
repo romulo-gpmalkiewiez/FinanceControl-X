@@ -54,7 +54,7 @@ namespace FinanceControlX.model
             return categorias;
         }
 
-        public static void Save(Categoria categoria)
+        public static Categoria Save(Categoria categoria)
         {
             ValidaCategoria(categoria);
 
@@ -71,12 +71,16 @@ namespace FinanceControlX.model
                     {
                         cmd.Parameters.AddWithValue("@nome", categoria.Nome);
                         cmd.ExecuteNonQuery();
+                        categoria.Id = Convert.ToInt32(cmd.LastInsertedId);
+
+                        return categoria;
                     }
                 }
             }
             catch (Exception e)
             {
                 MessageBox.Show(e.Message);
+                return null;
             }
         }
 
